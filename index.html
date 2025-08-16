@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Verse Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .language-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .toggle-switch {
+            background: white;
+            border-radius: 25px;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .toggle-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .toggle-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .toggle-button:not(.active) {
+            background: transparent;
+            color: #333;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .theme-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .theme-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn, .random-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .random-btn {
+            background: #764ba2;
+            color: white;
+        }
+
+        .search-btn:hover, .random-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .content-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .verse-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+        }
+
+        .verse-text {
+            font-size: 1.4rem;
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            line-height: 1.8;
+        }
+
+        .verse-reference {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .quiz-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #856404;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quiz-option {
+            padding: 12px;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .quiz-option:hover {
+            background: #fff3cd;
+        }
+
+        .quiz-option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .quiz-option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .quiz-feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .quiz-feedback.show {
+            display: block;
+        }
+
+        .quiz-feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .quiz-feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .prayer-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4f1d4 100%);
+            border-left: 4px solid #28a745;
+            text-align: center;
+        }
+
+        .prayer-section h3 {
+            color: #28a745;
+        }
+
+        .cross-references {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .cross-ref-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .cross-ref-verse {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .cross-ref-text {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .theme-display {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .verse-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 Bible Verse Explorer</h1>
+            <p>Discover wisdom through interactive verse exploration</p>
+        </div>
+
+        <div class="language-toggle">
+            <div class="toggle-switch">
+                <button class="toggle-button active" onclick="setLanguage('en')">English</button>
+                <button class="toggle-button" onclick="setLanguage('sq')">Shqip</button>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" class="theme-input" id="themeInput" placeholder="Enter a theme (e.g., love, forgiveness, hope)...">
+                <button class="search-btn" onclick="searchTheme()">🔍 Explore</button>
+                <button class="random-btn" onclick="randomTheme()">🎲 Random</button>
+            </div>
+            <p style="text-align: center; color: #666; margin-top: 10px;">
+                <span id="searchHint">Try themes like: love, peace, strength, wisdom, forgiveness, hope, faith</span>
+            </p>
+        </div>
+
+        <div class="content-section" id="contentSection">
+            <div class="theme-display" id="themeDisplay"></div>
+            
+            <div class="verse-section">
+                <div class="verse-text" id="verseText"></div>
+                <div class="verse-reference" id="verseReference"></div>
+            </div>
+
+            <div class="section">
+                <h3 id="contextTitle">📚 Historical Context & Meaning</h3>
+                <p id="contextText"></p>
+            </div>
+
+            <div class="section">
+                <h3 id="applicationTitle">🌱 Life Application</h3>
+                <p id="applicationText"></p>
+            </div>
+
+            <div class="section">
+                <h3 id="funFactTitle">✨ Did You Know?</h3>
+                <p id="funFactText"></p>
+            </div>
+
+            <div class="section">
+                <h3 id="crossRefTitle">🔗 Related Verses</h3>
+                <div class="cross-references" id="crossReferences"></div>
+            </div>
+
+            <div class="section">
+                <h3 id="reflectionTitle">💭 Reflection Question</h3>
+                <p id="reflectionText"></p>
+            </div>
+
+            <div class="section quiz-section">
+                <h3 id="quizTitle">🧠 Understanding Check</h3>
+                <div class="quiz-question" id="quizQuestion"></div>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+            </div>
+
+            <div class="section prayer-section">
+                <h3 id="prayerTitle">🙏 Prayer Prompt</h3>
+                <p id="prayerText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLanguage = 'en';
+        let currentTheme = '';
+        let quizAnswered = false;
+
+        const themes = {
+            'love': {
+                en: {
+                    verse: "Love is patient, love is kind. It does not envy, it does not boast, it is not proud.",
+                    reference: "1 Corinthians 13:4",
+                    context: "Paul wrote this letter to the Corinthian church around 55 AD to address various issues in their community. This passage, often called the 'Love Chapter,' defines divine love (agape) - a selfless, unconditional love that seeks the good of others. In the Greek culture of Corinth, which valued status and personal achievement, Paul's definition of love was revolutionary.",
+                    application: "True love isn't just a feeling - it's a choice and an action. In daily life, this means choosing patience when someone frustrates you, showing kindness even when it's not returned, and celebrating others' successes without jealousy. This kind of love transforms relationships, families, and communities.",
+                    funFact: "The Greek word 'agape' used here appears 106 times in the New Testament. Unlike 'eros' (romantic love) or 'philos' (friendship), agape represents sacrificial, unconditional love that seeks the highest good of another person.",
+                    crossRefs: [
+                        { verse: "John 3:16", text: "For God so loved the world that he gave his one and only Son..." },
+                        { verse: "1 John 4:19", text: "We love because he first loved us." },
+                        { verse: "Romans 5:8", text: "But God demonstrates his own love for us in this: While we were still sinners, Christ died for us." }
+                    ],
+                    reflection: "Think of a relationship in your life that could benefit from more patience and kindness. How can you show agape love to that person this week, even if it requires sacrifice on your part?",
+                    quiz: {
+                        question: "According to this verse, what are two key characteristics of love?",
+                        options: ["Patient and kind", "Strong and bold", "Wise and careful", "Quick and decisive"],
+                        correct: 0,
+                        feedback: {
+                            correct: "Exactly right! Paul emphasizes that love is fundamentally patient and kind - qualities that require selflessness and consideration for others.",
+                            incorrect: "The verse specifically states that love is 'patient' and 'kind' - these are the foundational characteristics Paul mentions first."
+                        }
+                    },
+                    prayer: "Take a moment to pray: 'God, help me to love others with patience and kindness today. Show me where I can put aside my own desires to serve others with genuine agape love. Transform my heart to reflect Your love to those around me.'"
+                },
+                sq: {
+                    verse: "Dashuria është e durueshme, dashuria është e mirë. Ajo nuk ka zili, nuk mburret, nuk është kryelartë.",
+                    reference: "1 Korintasve 13:4",
+                    context: "Pali shkroi këtë letër për kishën e Korintit rreth vitit 55 pas Krishtit për t'u marrë me çështje të ndryshme në komunitetin e tyre. Ky pasazh, i quajtur shpesh 'Kapitulli i Dashurisë,' përcakton dashurinë hyjnore (agape) - një dashuri altruiste, e pakushtëzuar që kërkon të mirën e të tjerëve. Në kulturën greke të Korintit, e cila vlerësonte statusin dhe arritjet personale, përkufizimi i Palit për dashurinë ishte revolucionar.",
+                    application: "Dashuria e vërtetë nuk është vetëm një ndjenjë - është një zgjedhje dhe një veprim. Në jetën e përditshme, kjo do të thotë të zgjedhësh durimin kur dikush të frushtron, të tregosh mirësi edhe kur nuk kthehet, dhe të festosh sukseset e të tjerëve pa zili. Ky lloj dashurie transformon marrëdhëniet, familjet dhe komunitetet.",
+                    funFact: "Fjala greke 'agape' e përdorur këtu shfaqet 106 herë në Besëlidhjen e Re. Ndryshe nga 'eros' (dashuria romantike) ose 'philos' (miqësia), agape përfaqëson dashurinë sakrifikuese, të pakushtëzuar që kërkon të mirën më të lartë të një personi tjetër.",
+                    crossRefs: [
+                        { verse: "Gjoni 3:16", text: "Sepse Zoti e deshi aq botën, sa që dha Birin e tij të vetëm..." },
+                        { verse: "1 Gjoni 4:19", text: "Ne duam sepse ai na deshi i pari." },
+                        { verse: "Romakëve 5:8", text: "Por Zoti tregon dashurinë e tij ndaj nesh në këtë: Ndërsa ishim akoma mëkatarë, Krishti vdiq për ne." }
+                    ],
+                    reflection: "Mendoni për një marrëdhënie në jetën tuaj që mund të përfitojë nga më shumë durim dhe mirësi. Si mund t'i tregoni dashuri agape atij personi këtë javë, edhe nëse kërkon sakrificë nga ana juaj?",
+                    quiz: {
+                        question: "Sipas këtij vargu, cilat janë dy karakteristikat kryesore të dashurisë?",
+                        options: ["E durueshme dhe e mirë", "E fortë dhe e guximshme", "E urtë dhe e kujdesshme", "E shpejtë dhe vendimtare"],
+                        correct: 0,
+                        feedback: {
+                            correct: "Saktësisht! Pali thekson se dashuria është në mënyrë themelore e durueshme dhe e mirë - cilësi që kërkojnë altruizëm dhe konsideratë për të tjerët.",
+                            incorrect: "Vargu thotë specifikisht se dashuria është 'e durueshme' dhe 'e mirë' - këto janë karakteristikat themelore që Pali i përmend së pari."
+                        }
+                    },
+                    prayer: "Merrni një moment për t'u lutur: 'Zot, më ndihmo të dua të tjerët me durim dhe mirësi sot. Tregomë ku mund të lë mënjanë dëshirat e mia për t'u shërbyer të tjerëve me dashuri të vërtetë agape. Transformo zemrën time për të pasqyruar dashurinë Tënde tek ata rreth meje.'"
+                }
+            },
+            'forgiveness': {
+                en: {
+                    verse: "Be kind and compassionate to one another, forgiving each other, just as in Christ God forgave you.",
+                    reference: "Ephesians 4:32",
+                    context: "Paul wrote this letter to the church in Ephesus around 60-62 AD while imprisoned in Rome. This verse comes in a section about Christian living and relationships. In the ancient world, forgiveness was often seen as weakness, but Paul presents it as a mark of spiritual maturity and strength, modeled after God's forgiveness of humanity.",
+                    application: "Forgiveness doesn't mean forgetting or excusing harmful behavior. It means releasing resentment and choosing not to hold grudges. This frees us from bitterness and opens the door to healing relationships. Like physical exercise, forgiveness gets easier with practice.",
+                    funFact: "The Greek word for 'forgiving' here is 'charizomai,' which is related to 'charis' (grace). It literally means 'to show favor freely' or 'to give graciously.' This shows forgiveness is an act of grace, not something earned.",
+                    crossRefs: [
+                        { verse: "Matthew 6:14-15", text: "For if you forgive other people when they sin against you, your heavenly Father will also forgive you." },
+                        { verse: "Colossians 3:13", text: "Bear with each other and forgive one another if any of you has a grievance against someone." },
+                        { verse: "Luke 23:34", text: "Father, forgive them, for they do not know what they are doing." }
+                    ],
+                    reflection: "Is there someone in your life you've been struggling to forgive? What would it look like to extend grace to them, remembering how Christ has forgiven you?",
+                    quiz: {
+                        question: "According to this verse, what should motivate our forgiveness of others?",
+                        options: ["Because they deserve it", "Because it's socially expected", "Because Christ forgave us", "Because it's legally required"],
+                        correct: 2,
+                        feedback: {
+                            correct: "Perfect! Our motivation for forgiving others comes from remembering how Christ has forgiven us. This divine example of grace empowers us to extend grace to others.",
+                            incorrect: "The verse clearly states we should forgive 'just as in Christ God forgave you' - our forgiveness is motivated by Christ's forgiveness of us."
+                        }
+                    },
+                    prayer: "Pray: 'Lord, thank You for the complete forgiveness You've given me through Christ. Help me to extend that same grace to others who have hurt me. Give me strength to release resentment and choose love over bitterness.'"
+                },
+                sq: {
+                    verse: "Jini të mirë dhe plot dhembshuri ndaj njëri-tjetrit, duke ia falur njëri-tjetrit, ashtu siç jua ka falur Zoti në Krisht.",
+                    reference: "Efesianëve 4:32",
+                    context: "Pali shkroi këtë letër për kishën në Efes rreth viteve 60-62 pas Krishtit ndërsa ishte i burgosur në Romë. Ky varg vjen në një seksion për jetën dhe marrëdhëniet kristiane. Në botën e lashtë, falja shpesh shihej si dobësi, por Pali e paraqet atë si një shenjë pjekurie dhe force shpirtërore, të modeluar sipas faljes së Zotit ndaj njerëzimit.",
+                    application: "Falja nuk do të thotë harrimi ose shfajësimi i sjelljes së dëmshme. Do të thotë lirimi i hidhërimit dhe zgjedhja për të mos mbajtur inat. Kjo na liron nga hidhërimi dhe hap derën për shërimin e marrëdhënieve. Si stërvitja fizike, falja bëhet më e lehtë me praktikën.",
+                    funFact: "Fjala greke për 'falur' këtu është 'charizomai,' e cila lidhet me 'charis' (hir). Literally do të thotë 'të tregosh favor lirisht' ose 'të japësh me hir.' Kjo tregon se falja është një akt hire, jo diçka e fituar.",
+                    crossRefs: [
+                        { verse: "Mateu 6:14-15", text: "Sepse në qoftë se u falni njerëzve fajet e tyre, edhe Ati juaj qiellor do t'jua falë juve." },
+                        { verse: "Kolosianëve 3:13", text: "Duke e duruar njëri-tjetrin dhe duke ia falur njëri-tjetrit, në qoftë se dikush ka ndonjë ankesë kundër tjetrit." },
+                        { verse: "Luka 23:34", text: "Atë, fali ua, sepse nuk dinë ç'bëjnë." }
+                    ],
+                    reflection: "Ka ndonjë person në jetën tuaj që keni qenë duke luftuar për ta falur? Si do të dukej të zgjatni hirin ndaj tyre, duke kujtuar se si Krishti ju ka falur?",
+                    quiz: {
+                        question: "Sipas këtij vargu, çfarë duhet të motivojë faljesën tonë ndaj të tjerëve?",
+                        options: ["Sepse e meritojnë", "Sepse pritet shoqërisht", "Sepse Krishti na ka falur", "Sepse kërkohet ligjërisht"],
+                        correct: 2,
+                        feedback: {
+                            correct: "Perfekt! Motivimi ynë për të falur të tjerët vjen nga kujtimi se si Krishti na ka falur. Ky shembull hyjnor i hirit na fuqizon të zgjasim hirin tek të tjerët.",
+                            incorrect: "Vargu thotë qartë se duhet të falim 'ashtu siç jua ka falur Zoti në Krisht' - falja jonë motivohet nga falja e Krishtit ndaj nesh."
+                        }
+                    },
+                    prayer: "Lutuni: 'Zot, faleminderit për faljesën e plotë që më ke dhënë përmes Krishtit. Më ndihmo të zgjat atë hir të njëjtë tek të tjerët që më kanë lënduar. Më jep forcë të liroj hidhërimin dhe të zgjedh dashurinë mbi hidhërimin.'"
+                }
+            },
+            'peace': {
+                en: {
+                    verse: "And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
+                    reference: "Philippians 4:7",
+                    context: "Paul wrote this letter around 60-62 AD while under house arrest in Rome. The Philippian church had sent him financial support, and this letter is his grateful response. This verse follows Paul's teaching about prayer and thanksgiving, showing that God's peace is the result of trusting Him with our concerns.",
+                    application: "God's peace isn't the absence of problems but the presence of calm in the midst of storms. This supernatural peace guards our hearts (emotions) and minds (thoughts) like a soldier standing watch. When anxiety threatens, we can access this peace through prayer and trust in God's sovereignty.",
+                    funFact: "The word 'guard' in Greek is 'phroureo,' a military term meaning to garrison or protect with a guard. It's the same word used to describe how soldiers would protect a city. God's peace literally stands guard over our inner life!",
+                    crossRefs: [
+                        { verse: "John 14:27", text: "Peace I leave with you; my peace I give you. I do not give to you as the world gives." },
+                        { verse: "Isaiah 26:3", text: "You will keep in perfect peace those whose minds are steadfast, because they trust in you." },
+                        { verse: "Romans 5:1", text: "Therefore, since we have been justified through faith, we have peace with God through our Lord Jesus Christ." }
+                    ],
+                    reflection: "What situation in your life feels chaotic right now? How might you invite God's transcendent peace to guard your heart and mind in this circumstance?",
+                    quiz: {
+                        question: "According to this verse, God's peace 'transcends all understanding.' What does this mean?",
+                        options: ["It's confusing and hard to grasp", "It's beyond human logic and comprehension", "It requires special education", "It only comes through studying"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Exactly! God's peace is supernatural - it goes beyond what human wisdom or understanding can produce. It's a divine gift that surpasses our natural ability to create calm.",
+                            incorrect: "To 'transcend understanding' means God's peace is supernatural, going beyond what human logic or circumstances would naturally produce."
+                        }
+                    },
+                    prayer: "Pray: 'Prince of Peace, I invite Your supernatural peace to guard my heart and mind today. In areas where I feel anxious or troubled, help me to trust You and experience the peace that surpasses understanding.'"
+                },
+                sq: {
+                    verse: "Dhe paqja e Zotit, e cila tejkalon çdo kuptim, do t'i ruajë zemrat dhe mendimet tuaja në Krisht Jezus.",
+                    reference: "Filipianëve 4:7",
+                    context: "Pali shkroi këtë letër rreth viteve 60-62 pas Krishtit ndërsa ishte nën arrest shtëpie në Romë. Kisha e Filipeve i kishte dërguar mbështetje financiare, dhe kjo letër është përgjigja e tij mirënjohëse. Ky varg vjen pas mësimit të Palit për lutjen dhe falënderimin, duke treguar se paqja e Zotit është rezultat i besimit në Të me shqetësimet tona.",
+                    application: "Paqja e Zotit nuk është mungesa e problemeve por prania e qetësisë në mes të stuhive. Kjo paqe hyjnore ruan zemrat tona (emocionet) dhe mendimet tona (mendimet) si një ushtar që ruan. Kur ankthi kërcënon, ne mund të aksesojmë këtë paqe përmes lutjes dhe besimit në sovranitetin e Zotit.",
+                    funFact: "Fjala 'ruaj' në greqisht është 'phroureo,' një term ushtarak që do të thotë të vendosësh garnizion ose të mbrosh me një rojë. Është e njëjta fjalë e përdorur për të përshkruar se si ushtarët do të mbronin një qytet. Paqja e Zotit qëndron letralisht në roje mbi jetën tonë të brendshme!",
+                    crossRefs: [
+                        { verse: "Gjoni 14:27", text: "Paqe ju lë, paqen time ju jap; unë nuk jua jap ashtu si e jep bota." },
+                        { verse: "Isaia 26:3", text: "Ti do ta mbash në paqe të përsosur atë që ka mendimin e palëkundur, sepse beson tek ti." },
+                        { verse: "Romakëve 5:1", text: "Prandaj, duke qenë se u shfajësuam me anë të besimit, kemi paqe me Zotin me anë të Zotit tonë Jezus Krisht." }
+                    ],
+                    reflection: "Cila situatë në jetën tuaj duket kaotike tani? Si mund të ftoni paqen transcendente të Zotit të ruajë zemrën dhe mendjen tuaj në këtë rrethanë?",
+                    quiz: {
+                        question: "Sipas këtij vargu, paqja e Zotit 'tejkalon çdo kuptim.' Çfarë do të thotë kjo?",
+                        options: ["Është konfuze dhe e vështirë për t'u kuptuar", "Është përtej logjikës dhe kuptimtarisë njerëzore", "Kërkon arsimim të veçantë", "Vjen vetëm përmes studimit"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Saktësisht! Paqja e Zotit është hyjnore - tejkalon atë që urtia ose kuptimi njerëzor mund të prodhojë. Është një dhuratë hyjnore që tejkalon aftësinë tonë natyrore për të krijuar qetësi.",
+                            incorrect: "Të 'tejkalosh kuptimin' do të thotë se paqja e Zotit është hyjnore, duke shkuar përtej asaj që logjika ose rrethanat njerëzore do të prodhoninë natyrshëm."
+                        }
+                    },
+                    prayer: "Lutuni: 'Princi i Paqes, ftoj paqen Tënde hyjnore të ruajë zemrën dhe mendjen time sot. Në zonat ku ndihem i ankthuar ose i shqetësuar, më ndihmo të besoj tek Ti dhe të përjetoj paqen që tejkalon kuptimin.'"
+                }
+            },
+            'strength': {
+                en: {
+                    verse: "I can do all this through him who gives me strength.",
+                    reference: "Philippians 4:13",
+                    context: "This famous verse comes from Paul's letter to the Philippians, written around 60-62 AD during his Roman imprisonment. Importantly, Paul wasn't talking about unlimited power to do anything, but specifically about his ability to be content in any circumstance - whether in need or plenty. The context is about finding strength in difficult situations.",
+                    application: "This verse isn't a blank check for success in any endeavor, but rather a promise that Christ will provide the strength needed to handle whatever circumstances we face. Whether facing hardship or abundance, loss or gain, we can find the inner strength to remain faithful and content through Christ's power.",
+                    funFact: "The Greek word 'ischuo' translated as 'gives me strength' literally means 'to have strength, be strong, prevail.' It's not about physical strength but inner resilience and the power to endure. Paul is emphasizing spiritual and emotional strength, not physical prowess.",
+                    crossRefs: [
+                        { verse: "2 Corinthians 12:9", text: "But he said to me, 'My grace is sufficient for you, for my power is made perfect in weakness.'" },
+                        { verse: "Isaiah 40:31", text: "But those who hope in the Lord will renew their strength. They will soar on wings like eagles." },
+                        { verse: "Ephesians 6:10", text: "Finally, be strong in the Lord and in his mighty power." }
+                    ],
+                    reflection: "Think about a challenging situation you're currently facing. How might Christ's strength help you not just to overcome it, but to find peace and contentment regardless of the outcome?",
+                    quiz: {
+                        question: "In the context of Philippians 4:13, what specific ability was Paul referring to?",
+                        options: ["The ability to perform miracles", "The ability to be content in any circumstance", "The ability to become wealthy", "The ability to avoid all problems"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Exactly right! Paul was specifically talking about his ability to be content whether he had much or little, whether facing hardship or abundance. Christ's strength enabled this contentment.",
+                            incorrect: "In context, Paul is specifically discussing his ability to be content in any circumstance, whether in need or plenty. This is the strength Christ provides."
+                        }
+                    },
+                    prayer: "Pray: 'Lord Jesus, I need Your strength today. Help me to trust that You will provide exactly what I need to face whatever comes my way. Give me the inner strength to remain faithful and content, regardless of my circumstances.'"
+                },
+                sq: {
+                    verse: "Unë mund të bëj çdo gjë me anë të atij që më jep forcë.",
+                    reference: "Filipianëve 4:13",
+                    context: "Ky varg i famshëm vjen nga letra e Palit drejtuar Filipianëve, e shkruar rreth viteve 60-62 pas Krishtit gjatë burgosjes së tij romake. Është e rëndësishme, Pali nuk po fliste për fuqi të pakufizuar për të bërë gjithçka, por specifikisht për aftësinë e tij për të qenë i kënaqur në çdo rrethanë - qoftë në nevojë ose bollëk. Konteksti është për gjetjen e forcës në situata të vështira.",
+                    application: "Ky varg nuk është një çek i zbrazët për sukses në çdo përpjekje, por më tepër një premtim se Krishti do të sigurojë forcën e nevojshme për të përballuar çdo rrethanë që përballojmë. Qoftë përballë vështirësive ose bollëkut, humbjes ose fitimit, ne mund të gjejmë forcën e brendshme për të mbetur besnikë dhe të kënaqur përmes fuqisë së Krishtit.",
+                    funFact: "Fjala greke 'ischuo' e përkthyer si 'më jep forcë' letteralmente do të thotë 'të kesh forcë, të jesh i fortë, të mbizotërosh.' Nuk është për forcën fizike por qëndrueshmërinë e brendshme dhe fuqinë për të duruar. Pali thekson forcën shpirtërore dhe emocionale, jo aftësinë fizike.",
+                    crossRefs: [
+                        { verse: "2 Korintasve 12:9", text: "Por ai më tha: 'Hiri im të mjafton, sepse forca ime përkryhet në dobësi.'" },
+                        { verse: "Isaia 40:31", text: "Por ata që shpresojnë tek Zoti do të rinovojnë forcën. Ata do të fluturojnë me krahë si shqiponjat." },
+                        { verse: "Efesianëve 6:10", text: "Së fundi, forcohuni në Zotin dhe në fuqinë e tij të madhe." }
+                    ],
+                    reflection: "Mendoni për një situatë sfidëse që po përballoni aktualisht. Si mund t'ju ndihmojë forca e Krishtit jo vetëm ta kapërceni, por të gjeni paqe dhe kënaqësi pavarësisht nga rezultati?",
+                    quiz: {
+                        question: "Në kontekstin e Filipianëve 4:13, për cilën aftësi specifike po referohej Pali?",
+                        options: ["Aftësinë për të bërë mrekulli", "Aftësinë për të qenë i kënaqur në çdo rrethanë", "Aftësinë për të bërë pasuri", "Aftësinë për të shmangur të gjitha problemet"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Saktësisht! Pali po fliste specifikisht për aftësinë e tij për të qenë i kënaqur qoftë kur kishte shumë ose pak, qoftë përballë vështirësive ose bollëkut. Forca e Krishtit mundësoi këtë kënaqësi.",
+                            incorrect: "Në kontekst, Pali po diskuton specifikisht aftësinë e tij për të qenë i kënaqur në çdo rrethanë, qoftë në nevojë ose bollëk. Kjo është forca që jep Krishti."
+                        }
+                    },
+                    prayer: "Lutuni: 'Zot Jezus, më duhet forca Jote sot. Më ndihmo të besoj se Ti do të siguresh saktësisht atë që më duhet për të përballuar çdo gjë që vjen në rrugën time. Më jep forcën e brendshme për të mbetur besnik dhe i kënaqur, pavarësisht nga rrethanat e mia.'"
+                }
+            },
+            'hope': {
+                en: {
+                    verse: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, to give you hope and a future.",
+                    reference: "Jeremiah 29:11",
+                    context: "This verse was originally spoken by the prophet Jeremiah around 597-586 BC to the Jewish exiles in Babylon. They had been taken from their homeland and felt hopeless about their future. God was promising that their exile would end and they would return home after 70 years. While written to a specific people in a specific time, it reveals God's heart to give hope to His people.",
+                    application: "While this promise was specifically for the Israelites in exile, it reveals God's character - He is a God who gives hope and has good plans for His people. Even when we can't see the way forward, we can trust that God is working for our ultimate good and His glory, even through difficult circumstances.",
+                    funFact: "The Hebrew word for 'hope' here is 'tiqvah,' which literally means 'cord' or 'rope.' It suggests something strong that connects us to something secure. Our hope in God is like a lifeline that connects us to His promises and character, keeping us anchored even in storms.",
+                    crossRefs: [
+                        { verse: "Romans 8:28", text: "And we know that in all things God works for the good of those who love him." },
+                        { verse: "Psalm 42:11", text: "Why, my soul, are you downcast? Put your hope in God." },
+                        { verse: "1 Peter 1:3", text: "Praise be to the God and Father of our Lord Jesus Christ! In his great mercy he has given us new birth into a living hope." }
+                    ],
+                    reflection: "What situation in your life feels hopeless right now? How might remembering God's character and His good plans help you hold onto hope, even when you can't see the outcome?",
+                    quiz: {
+                        question: "According to this verse, what kind of plans does God have for His people?",
+                        options: ["Plans to make them wealthy", "Plans to prosper and not harm, to give hope and a future", "Plans to make them famous", "Plans to eliminate all their problems"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Perfect! God's plans are specifically described as plans to prosper (not necessarily financially, but to help us flourish), not to harm us, and to give us hope and a future.",
+                            incorrect: "The verse specifically states God's plans are 'to prosper you and not to harm you, to give you hope and a future' - this is about God's good intentions for His people."
+                        }
+                    },
+                    prayer: "Pray: 'Heavenly Father, when I feel discouraged or uncertain about the future, remind me of Your good plans for my life. Help me to trust in Your timing and Your goodness, even when I can't see the full picture. Fill me with hope that comes from knowing You.'"
+                },
+                sq: {
+                    verse: "Sepse unë i njoh planet që kam për ju, thotë Zoti, plane për t'ju dhënë prosperitet dhe jo për t'ju dëmtuar, për t'ju dhënë shpresë dhe një të ardhme.",
+                    reference: "Jeremia 29:11",
+                    context: "Ky varg u tha fillimisht nga profeti Jeremia rreth viteve 597-586 para Krishtit për të dëbuarit hebreut në Babiloni. Ata ishin marrë nga atdheu i tyre dhe ndiheshin pa shpresë për të ardhmen e tyre. Zoti po premtonte se dëbimi i tyre do të përfundonte dhe ata do të ktheheshin në shtëpi pas 70 vjetësh. Edhe pse u shkrua për një popull specifik në një kohë specifike, ai zbulon zemrën e Zotit për t'u dhënë shpresë popullit të Tij.",
+                    application: "Edhe pse kjo premtim ishte specifikisht për izraelitët në dëbim, ajo zbulon karakterin e Zotit - Ai është një Zot që jep shpresë dhe ka plane të mira për popullin e Tij. Edhe kur nuk mund të shohim rrugën përpara, ne mund të besojmë se Zoti po punon për të mirën tonë përfundimtare dhe lavdinë e Tij, edhe përmes rrethanave të vështira.",
+                    funFact: "Fjala hebraike për 'shpresë' këtu është 'tiqvah,' e cila letralisht do të thotë 'litar' ose 'litar.' Sugjeron diçka të fortë që na lidh me diçka të sigurt. Shpresa jonë tek Zoti është si një linjë jete që na lidh me premtimet dhe karakterin e Tij, duke na mbajtur të ankoruar edhe në stuhi.",
+                    crossRefs: [
+                        { verse: "Romakëve 8:28", text: "Dhe ne e dimë se Zoti i bën të gjitha gjërat për të mirën e atyre që e duan atë." },
+                        { verse: "Psalmi 42:11", text: "Pse je i trishtuar, o shpirt im? Shpreso tek Zoti." },
+                        { verse: "1 Pjetri 1:3", text: "I bekuar qoftë Zoti dhe Ati i Zotit tonë Jezus Krisht! Në mëshirën e tij të madhe na ka dhënë lindjen e re në një shpresë të gjallë." }
+                    ],
+                    reflection: "Cila situatë në jetën tuaj duket pa shpresë tani? Si mund t'ju ndihmojë kujtimi i karakterit të Zotit dhe planeve të Tij të mira të mbani shpresën, edhe kur nuk mund ta shihni rezultatin?",
+                    quiz: {
+                        question: "Sipas këtij vargu, çfarë lloj planesh ka Zoti për popullin e Tij?",
+                        options: ["Plane për t'i bërë të pasur", "Plane për prosperitet dhe jo për dëm, për të dhënë shpresë dhe të ardhme", "Plane për t'i bërë të famshëm", "Plane për të eliminuar të gjitha problemet e tyre"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Perfekt! Planet e Zotit përshkruhen specifikisht si plane për prosperitet (jo domosdoshmërisht financiarisht, por për të na ndihmuar të lulëzojmë), për të mos na dëmtuar, dhe për të na dhënë shpresë dhe të ardhme.",
+                            incorrect: "Vargu thotë specifikisht se planet e Zotit janë 'për t'ju dhënë prosperitet dhe jo për t'ju dëmtuar, për t'ju dhënë shpresë dhe një të ardhme' - kjo është për qëllimet e mira të Zotit për popullin e Tij."
+                        }
+                    },
+                    prayer: "Lutuni: 'Atë Qiellor, kur ndihem i dekurajuar ose i pasigurt për të ardhmen, më kujto planet e Tua të mira për jetën time. Më ndihmo të besoj në kohën Tënde dhe mirësinë Tënde, edhe kur nuk mund ta shoh pamjen e plotë. Më mbush me shpresë që vjen nga njohja e Jotja.'"
+                }
+            },
+            'wisdom': {
+                en: {
+                    verse: "If any of you lacks wisdom, you should ask God, who gives generously to all without finding fault, and it will be given to you.",
+                    reference: "James 1:5",
+                    context: "James, the brother of Jesus, wrote this letter around 49-62 AD to Jewish Christians scattered throughout the Roman Empire. This verse comes in the context of facing trials and difficulties. James is teaching that when we face challenging situations and don't know what to do, God is eager to give us the wisdom we need to navigate them well.",
+                    application: "God's wisdom isn't just intellectual knowledge but practical insight for living well. When facing decisions, relationships, or difficult circumstances, we can confidently ask God for guidance. Unlike human advisors who might judge us for asking, God gives wisdom generously and without criticism.",
+                    funFact: "The Greek word for 'wisdom' here is 'sophia,' which in biblical context means practical skill in the art of living righteously. It's not just about knowing facts, but about knowing how to apply God's truth to real-life situations with discernment and good judgment.",
+                    crossRefs: [
+                        { verse: "Proverbs 3:5-6", text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight." },
+                        { verse: "1 Corinthians 1:30", text: "It is because of him that you are in Christ Jesus, who has become for us wisdom from God." },
+                        { verse: "Psalm 119:105", text: "Your word is a lamp for my feet, a light on my path." }
+                    ],
+                    reflection: "What decision or situation are you facing right now where you need God's wisdom? Take a moment to specifically ask Him for insight and guidance, trusting that He wants to help you.",
+                    quiz: {
+                        question: "According to James 1:5, how does God respond when we ask for wisdom?",
+                        options: ["He gives reluctantly after we prove ourselves", "He gives generously without finding fault", "He gives only to certain people", "He gives only after we study enough"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Exactly! God gives wisdom generously (abundantly) and without finding fault (without criticism or judgment). He's eager to help us and doesn't criticize us for needing guidance.",
+                            incorrect: "The verse clearly states that God 'gives generously to all without finding fault' - He's eager to give wisdom and doesn't criticize us for asking."
+                        }
+                    },
+                    prayer: "Pray: 'Lord, I need Your wisdom for the decisions and challenges I'm facing. Thank You for Your promise to give generously without judgment. Help me to seek Your guidance first and trust in Your direction for my life.'"
+                },
+                sq: {
+                    verse: "Në qoftë se dikujt prej jush i mungon urtia, le të kërkojë prej Zotit, i cili u jep të gjithëve me bujarllëk dhe pa qortuar, dhe do t'i jepet.",
+                    reference: "Jakobi 1:5",
+                    context: "Jakobi, vëllai i Jezusit, shkroi këtë letër rreth viteve 49-62 pas Krishtit për të krishterët hebreut të shpërndarë në të gjithë Perandorinë Romake. Ky varg vjen në kontekstin e përballjes së provave dhe vështirësive. Jakobi po mëson se kur përballemi me situata sfidëse dhe nuk dimë çfarë të bëjmë, Zoti dëshiron të na japë urtinë që na duhet për t'i naviguar ato mirë.",
+                    application: "Urtia e Zotit nuk është vetëm njohuri intelektuale por njohuri praktike për të jetuar mirë. Kur përballemi me vendime, marrëdhënie ose rrethana të vështira, ne mund të kërkojmë me besim udhëzimin e Zotit. Ndryshe nga këshilltarët njerëzorë që mund të na gjykojnë për pyetjen, Zoti jep urti me bujarllëk dhe pa kritikë.",
+                    funFact: "Fjala greke për 'urti' këtu është 'sophia,' e cila në kontekstin biblik do të thotë aftësi praktike në artin e të jetuarit me drejtësi. Nuk është vetëm për të ditur fakte, por për të ditur se si të aplikosh të vërtetën e Zotit në situata të jetës reale me discernment dhe gjykim të mirë.",
+                    crossRefs: [
+                        { verse: "Fjalët e Urta 3:5-6", text: "Beso tek Zoti me gjithë zemrën tënde dhe mos u mbështet në kuptimin tënd; në të gjitha rrugët e tua drejtohu tek ai, dhe ai do t'i drejtojë rrugët e tua." },
+                        { verse: "1 Korintasve 1:30", text: "Për shkak të tij ju jeni në Krisht Jezus, i cili u bë për ne urti nga Zoti." },
+                        { verse: "Psalmi 119:105", text: "Fjala jote është pishtar për këmbët e mia, dritë për rrugën time." }
+                    ],
+                    reflection: "Cilën vendim ose situatë po përballoni tani ku ju duhet urtia e Zotit? Merrni një moment për të kërkuar specifikisht prej Tij njohuri dhe udhëzim, duke besuar se Ai dëshiron t'ju ndihmojë.",
+                    quiz: {
+                        question: "Sipas Jakobi 1:5, si përgjigjet Zoti kur kërkojmë urti?",
+                        options: ["Jep me kundërshtim pasi të provojmë veten", "Jep me bujarllëk pa qortuar", "Jep vetëm për njerëz të caktuar", "Jep vetëm pasi të studiojmë mjaftueshëm"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Saktësisht! Zoti jep urti me bujarllëk (me bollëk) dhe pa qortuar (pa kritikë ose gjykim). Ai dëshiron të na ndihmojë dhe nuk na kritikon për të pasur nevojë për udhëzim.",
+                            incorrect: "Vargu thotë qartë se Zoti 'u jep të gjithëve me bujarllëk dhe pa qortuar' - Ai dëshiron të japë urti dhe nuk na kritikon për pyetjen."
+                        }
+                    },
+                    prayer: "Lutuni: 'Zot, më duhet urtia Jote për vendimet dhe sfidat që po përballoj. Faleminderit për premtimin Tënd të dhënies me bujarllëk pa gjykim. Më ndihmo të kërkoj udhëzimin Tënd së pari dhe të besoj në drejtimin Tënd për jetën time.'"
+                }
+            },
+            'faith': {
+                en: {
+                    verse: "Now faith is confidence in what we hope for and assurance about what we do not see.",
+                    reference: "Hebrews 11:1",
+                    context: "The book of Hebrews was written around 60-70 AD to Jewish Christians who were facing persecution and considering returning to Judaism. Chapter 11, known as the 'Hall of Faith,' defines faith and then gives examples of Old Testament heroes who lived by faith. This verse serves as the definition that frames the entire chapter about faith in action.",
+                    application: "Faith isn't blind belief or wishful thinking - it's confident trust based on God's character and promises. When we can't see the outcome, when circumstances look impossible, faith allows us to act on what we know to be true about God rather than what we see with our eyes. Faith bridges the gap between God's promises and their fulfillment.",
+                    funFact: "The Greek word for 'confidence' is 'hypostasis,' which literally means 'substance' or 'foundation.' Faith isn't just a feeling - it's the solid foundation upon which we build our lives. The word for 'assurance' is 'elegchos,' meaning 'proof' or 'conviction' - faith provides internal evidence of spiritual realities.",
+                    crossRefs: [
+                        { verse: "2 Corinthians 5:7", text: "For we live by faith, not by sight." },
+                        { verse: "Romans 10:17", text: "Consequently, faith comes from hearing the message, and the message is heard through the word about Christ." },
+                        { verse: "Matthew 17:20", text: "Truly I tell you, if you have faith as small as a mustard seed, you can say to this mountain, 'Move from here to there,' and it will move." }
+                    ],
+                    reflection: "What situation in your life requires you to trust God even though you can't see how it will work out? How can you strengthen your confidence in God's character and promises in that area?",
+                    quiz: {
+                        question: "According to Hebrews 11:1, faith is described as confidence in what we hope for and what else?",
+                        options: ["Proof of what we can see", "Assurance about what we do not see", "Evidence of our good works", "Guarantee of immediate answers"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Perfect! Faith provides assurance about spiritual realities we cannot see with our physical eyes. It gives us certainty about God's invisible kingdom and promises.",
+                            incorrect: "The verse specifically states that faith is 'assurance about what we do not see' - faith deals with spiritual realities beyond our physical sight."
+                        }
+                    },
+                    prayer: "Pray: 'Lord, strengthen my faith to trust You even when I cannot see the path ahead. Help me to be confident in Your promises and character, especially in areas where I'm struggling to believe. Let my faith be the foundation that guides my decisions and actions.'"
+                },
+                sq: {
+                    verse: "Besimi është siguria për atë që shpresojmë dhe dëshmia për gjërat që nuk i shohim.",
+                    reference: "Hebrenjtë 11:1",
+                    context: "Libri i Hebrenjtë u shkrua rreth viteve 60-70 pas Krishtit për të krishterët hebreut që po përballeshin me përndjekje dhe po konsideronin kthimin në judaizëm. Kapitulli 11, i njohur si 'Salla e Besimit,' përcakton besimin dhe pastaj jep shembuj të heronjtë të Besëlidhjes së Vjetër që jetuan me besim. Ky varg shërben si përkufizimi që kurizo të gjithë kapitullin për besimin në veprim.",
+                    application: "Besimi nuk është besim i verbër ose mendim dëshirash - është besim i sigurt i bazuar në karakterin dhe premtimet e Zotit. Kur nuk mund të shohim rezultatin, kur rrethanat duken të pamundura, besimi na lejon të veprojmë mbi atë që dimë të jetë e vërtetë për Zotin në vend të asaj që shohim me sytë tanë. Besimi lidh hendekun midis premtimeve të Zotit dhe përmbushjes së tyre.",
+                    funFact: "Fjala greke për 'siguri' është 'hypostasis,' e cila letralisht do të thotë 'substancë' ose 'themel.' Besimi nuk është vetëm një ndjenjë - është themeli i fortë mbi të cilin ndërtojmë jetët tona. Fjala për 'dëshmi' është 'elegchos,' që do të thotë 'provë' ose 'bindja' - besimi siguron dëshmi të brendshme të realiteteve shpirtërore.",
+                    crossRefs: [
+                        { verse: "2 Korintasve 5:7", text: "Sepse ne ecim me besim, jo me sy." },
+                        { verse: "Romakëve 10:17", text: "Kështu pra, besimi vjen nga dëgjimi, dhe dëgjimi vjen nga fjala e Krishtit." },
+                        { verse: "Mateu 17:20", text: "Në të vërtetë ju them, në qoftë se keni besim sa një kokërr sinapi, mund t'i thoni këtij mali: 'Lëviz nga këtu dhe shko atje,' dhe ai do të lëvizë." }
+                    ],
+                    reflection: "Cila situatë në jetën tuaj kërkon që të besoni Zotin edhe pse nuk mund të shihni se si do të funksionojë? Si mund të forconi besimin tuaj në karakterin dhe premtimet e Zotit në atë zonë?",
+                    quiz: {
+                        question: "Sipas Hebrenjtë 11:1, besimi përshkruhet si siguri për atë që shpresojmë dhe çfarë tjetër?",
+                        options: ["Provë për atë që mund të shohim", "Dëshmia për atë që nuk shohim", "Dëshmi e veprave tona të mira", "Garanci për përgjigje të menjëhershme"],
+                        correct: 1,
+                        feedback: {
+                            correct: "Perfekt! Besimi siguron dëshmi për realitetet shpirtërore që nuk mund t'i shohim me sytë tanë fizikë. Na jep siguri për mbretërinë dhe premtimet e padukshme të Zotit.",
+                            incorrect: "Vargu thotë specifikisht se besimi është 'dëshmia për gjërat që nuk i shohim' - besimi merret me realitetet shpirtërore përtej shikimit tonë fizik."
+                        }
+                    },
+                    prayer: "Lutuni: 'Zot, forco besimin tim për të besuar tek Ti edhe kur nuk mund ta shoh rrugën përpara. Më ndihmo të jem i sigurt në premtimet dhe karakterin Tënd, veçanërisht në zona ku po luftoj për të besuar. Le të jetë besimi im themeli që udhëzon vendimet dhe veprimet e mia.'"
+                }
+            }
+        };
+
+        const randomThemes = ['love', 'forgiveness', 'peace', 'strength', 'hope', 'wisdom', 'faith'];
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update toggle buttons
+            document.querySelectorAll('.toggle-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update interface text
+            updateInterfaceText();
+
+            // Refresh content if exists
+            if (currentTheme && themes[currentTheme]) {
+                displayContent(currentTheme);
+            }
+        }
+
+        function updateInterfaceText() {
+            const texts = {
+                en: {
+                    inputPlaceholder: "Enter a theme (e.g., love, forgiveness, hope)...",
+                    searchBtn: "🔍 Explore",
+                    randomBtn: "🎲 Random",
+                    searchHint: "Try themes like: love, peace, strength, wisdom, forgiveness, hope, faith"
+                },
+                sq: {
+                    inputPlaceholder: "Shkruani një temë (p.sh., dashuri, fa
